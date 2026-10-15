@@ -34,7 +34,7 @@
   <!-- Alpine.js -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="font-poppins text-gray-800 antialiased" x-data="posPage()" x-init="initView()" x-cloak>
+<body class="font-poppins text-gray-800 antialiased" x-data="posPage()" x-init="initView(); autoReconnect()" x-cloak>
 <a href="#main" class="skip-link">Skip to main content</a>
 <!-- ════ MOBILE OVERLAY ════ -->
 <div id="sidebar-overlay"
@@ -282,6 +282,11 @@
               <p class="text-sm text-gray-500 mt-0.5">Receipt <span class="font-semibold text-gray-700" x-text="receiptNo"></span> · Cashier: Maria Santos</p>
             </div>
             <div class="flex items-center gap-2">
+            <button type="button" x-show="printerCfg.mode === 'usb' ? (usbSupported && usb.name) : (btSupported && printerCfg.name)" @click="printerReady ? openSettings() : reconnectPrinter(true)" class="inline-flex items-center gap-2 bg-white rounded-xl px-3 shadow-card text-sm font-semibold min-h-[3rem]" :class="printerReady ? 'text-brand-700' : 'text-red-600'" :title="printerReady ? 'Printer ready' : 'Tap to reconnect printer'">
+              <span class="w-2 h-2 rounded-full" :class="printerCfg.connecting ? 'bg-amber-400 animate-pulse' : (printerReady ? 'bg-brand-500' : 'bg-red-500')"></span>
+              <span class="hidden sm:inline" x-text="printerCfg.connecting ? 'Connecting…' : (printerReady ? 'Printer ready' : 'Reconnect printer')"></span>
+              <span class="sm:hidden" x-text="printerCfg.connecting ? '…' : (printerReady ? 'Ready' : 'Reconnect')"></span>
+            </button>
             <button type="button" @click="openSettings()" class="inline-flex items-center gap-2 bg-white rounded-xl px-3 shadow-card text-sm font-semibold text-gray-600 hover:text-brand-700 hover:bg-brand-50 transition-colors min-h-[3rem]" aria-haspopup="dialog">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               <span class="hidden sm:inline">Settings</span>
@@ -686,9 +691,8 @@
     <div id="receipt" class="receipt" x-show="sale">
       <template x-if="sale">
         <div>
-          <p class="r-center r-bold r-lg">PharmaPOS Pharmacy</p>
-          <p class="r-center">123 Sample St., Manila</p>
-          <p class="r-center">TIN: 000-000-000-000</p>
+          <p class="r-center r-bold r-lg" x-text="receiptCfg.title || receiptCfg.store"></p>
+          <p class="r-center whitespace-pre-line" x-show="receiptCfg.header" x-text="receiptCfg.header"></p>
           <hr>
           <p class="r-row"><span>Receipt</span><span x-text="sale.no"></span></p>
           <p class="r-row"><span>Date</span><span x-text="sale.date"></span></p>
@@ -712,23 +716,23 @@
           <p class="r-row" x-show="sale.method !== 'cash'"><span>Ref</span><span x-text="sale.ref"></span></p>
           <template x-if="sale.rx"><div><hr><p class="r-bold">Prescription</p><p x-text="'Patient: ' + sale.rx.patient"></p><p x-text="'Dr. ' + sale.rx.doctor.replace(/^Dr\.?\s*/i, '') + ' · PRC ' + sale.rx.prc"></p></div></template>
           <hr>
-          <p class="r-center">Thank you! Get well soon.</p>
+          <p class="r-center whitespace-pre-line" x-text="receiptCfg.footer"></p>
           <p class="r-center">Keep this receipt for returns.</p>
         </div>
       </template>
     </div>
 
     <div class="flex gap-3 px-5 py-4 no-print border-t border-gray-100">
-      <button @click="window.print()" class="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 min-h-[48px] flex items-center justify-center gap-2">
+      <button @click="printReceipt()" :disabled="printing" class="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 min-h-[48px] flex items-center justify-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-        Print
+        <span x-text="printing ? 'Printing…' : (printerReady ? (printerCfg.mode === 'usb' ? 'Print (USB)' : 'Print (Bluetooth)') : 'Print')"></span>
       </button>
       <button x-ref="newSale" @click="closeReceipt()" class="flex-1 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold min-h-[48px]">New sale</button>
     </div>
   </div>
 </div>
 
-<!-- ════ POS SETTINGS (UI only for now) ════ -->
+<!-- ════ POS SETTINGS (Bluetooth printing) ════ -->
 <div id="settings-backdrop" role="dialog" aria-modal="true" aria-labelledby="settings-title"
      :class="{ open: settingsOpen }" @keydown.escape="closeSettings()"
      @click="if ($event.target.id === 'settings-backdrop') closeSettings()">
@@ -749,12 +753,6 @@
       </button>
     </div>
 
-    <!-- UI-only notice -->
-    <div class="mx-5 mt-4 flex items-start gap-2 rounded-xl bg-amber-50 text-amber-700 px-3 py-2 text-xs">
-      <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      <span>Preview only. These settings aren’t connected to printing yet.</span>
-    </div>
-
     <!-- ── MENU ── -->
     <div x-show="settingsView === 'menu'" class="px-5 py-4 grid gap-3">
       <button type="button" @click="settingsView = 'receipt'" class="settings-opt">
@@ -772,7 +770,9 @@
           <span class="block text-xs text-gray-500 mt-0.5">Connect a Bluetooth or USB printer</span>
         </span>
         <span class="ms-auto flex items-center gap-2 flex-shrink-0">
-          <span class="badge bg-red-50 text-red-600 !text-[10px] !py-0.5 !px-2">Not connected</span>
+          <span class="badge !text-[10px] !py-0.5 !px-2"
+                :class="printerCfg.connecting ? 'bg-amber-50 text-amber-600' : (printerReady ? 'bg-brand-50 text-brand-700' : 'bg-red-50 text-red-600')"
+                x-text="printerCfg.connecting ? 'Connecting…' : (pConnected ? 'Connected' : (printerReady ? 'Ready' : (pName ? 'Reconnect' : 'Not connected')))"></span>
           <svg class="w-4 h-4 text-gray-300 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </span>
       </button>
@@ -852,11 +852,11 @@
     <!-- ── PRINTER ── -->
     <div x-show="settingsView === 'printer'" class="px-5 py-4 space-y-4">
       <div class="flex gap-1 bg-gray-100 rounded-xl p-1" role="tablist" aria-label="Connection type">
-        <button type="button" role="tab" :aria-selected="printerCfg.mode === 'bluetooth'" @click="printerCfg.mode = 'bluetooth'" class="conn-tab" :class="{ active: printerCfg.mode === 'bluetooth' }">
+        <button type="button" role="tab" :aria-selected="printerCfg.mode === 'bluetooth'" @click="setMode('bluetooth')" class="conn-tab" :class="{ active: printerCfg.mode === 'bluetooth' }">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7l10 10-5 5V2l5 5L7 17"/></svg>
           Bluetooth
         </button>
-        <button type="button" role="tab" :aria-selected="printerCfg.mode === 'usb'" @click="printerCfg.mode = 'usb'" class="conn-tab" :class="{ active: printerCfg.mode === 'usb' }">
+        <button type="button" role="tab" :aria-selected="printerCfg.mode === 'usb'" @click="setMode('usb')" class="conn-tab" :class="{ active: printerCfg.mode === 'usb' }">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
           Wired (USB)
         </button>
@@ -865,17 +865,22 @@
       <div class="rounded-xl border border-gray-100 bg-gray-50/60 p-4">
         <div class="bg-white border border-gray-100 rounded-xl px-3 py-2">
           <p class="text-[11px] text-gray-400">Status</p>
-          <p class="text-sm font-semibold flex items-center gap-2" :class="printerCfg.connected ? 'text-brand-600' : 'text-red-600'">
-            <span class="w-2 h-2 rounded-full" :class="printerCfg.connected ? 'bg-brand-500' : 'bg-red-500'"></span>
-            <span x-text="printerCfg.connected ? 'Connected' : 'Not connected'"></span>
+          <p class="text-sm font-semibold flex items-center gap-2" :class="pConnected ? 'text-brand-600' : 'text-red-600'">
+            <span class="w-2 h-2 rounded-full" :class="pConnected ? 'bg-brand-500' : 'bg-red-500'"></span>
+            <span x-text="pConnected ? 'Connected' + (pName ? ' · ' + pName : '') : (pName ? (printerCfg.mode !== 'usb' && printerCfg.idle ? 'Ready · ' : 'Disconnected · ') + pName : 'Not connected')"></span>
           </p>
         </div>
-        <p class="text-sm text-gray-500 text-center mt-3" x-show="printerCfg.mode === 'bluetooth'">No Bluetooth printers paired yet. Turn on your printer, select Scan printer, then choose it in the browser prompt.</p>
-        <p class="text-sm text-gray-500 text-center mt-3" x-show="printerCfg.mode === 'usb'">No USB printers found. Plug in your printer with a USB cable, select Scan printer, then choose it in the browser prompt.</p>
+        <p class="text-sm text-red-600 text-center mt-3" x-show="printerCfg.mode === 'bluetooth' && !btSupported">Web Bluetooth isn’t supported here. Use Chrome on Android or desktop (not iPhone/Safari) over HTTPS. You can still use Print to go through the system print dialog.</p>
+        <p class="text-sm text-gray-500 text-center mt-3" x-show="printerCfg.mode === 'bluetooth' && btSupported">Turn on your printer, tap Scan printer, then choose it in the browser prompt. Works with BLE (ESC/POS) thermal printers.</p>
+        <p class="text-sm text-red-600 text-center mt-3" x-show="printerCfg.mode === 'usb' && !usbSupported">WebUSB isn’t supported here. Use Chrome or Edge (Android, Windows, Mac, Linux, ChromeOS) over HTTPS or localhost. Not available on iPhone/Safari or Firefox.</p>
+        <p class="text-sm text-gray-500 text-center mt-3" x-show="printerCfg.mode === 'usb' && usbSupported">Plug in the printer with its USB cable (on a phone, use an OTG adapter), turn it on, tap Scan printer, then pick it in the browser prompt. Prints raw ESC/POS directly, with no print dialog.</p>
+        <p class="text-xs text-gray-400 text-center mt-2" x-show="printerCfg.mode === 'usb' && usbSupported">Windows: if it says “Access denied” or “Unable to claim interface”, the printer is held by Windows’ own printer driver. Switch it to the WinUSB driver with the free Zadig tool, or use an Android phone, Mac, Linux or ChromeOS.</p>
+        <p class="text-xs text-red-600 text-center mt-2" x-show="printerCfg.error" x-text="printerCfg.error"></p>
       </div>
 
-      <button type="button" @click="scanPrinter()" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold min-h-[48px]">Scan printer</button>
-      <button type="button" disabled class="w-full py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-400 min-h-[48px] cursor-not-allowed">Test print</button>
+      <button type="button" @click="printerCfg.mode === 'usb' ? usbScan() : scanPrinter()" :disabled="printerCfg.mode === 'usb' ? !usbSupported : !btSupported" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white text-sm font-bold min-h-[48px]" x-text="pConnected ? 'Scan another printer' : 'Scan printer'"></button>
+      <button type="button" @click="testPrint()"   :disabled="!printerReady || printing" class="w-full py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed min-h-[48px]">Test print</button>
+      <button type="button" x-show="pConnected" @click="disconnectPrinter()" class="w-full py-2 text-sm font-semibold text-red-600">Disconnect</button>
     </div>
 
     <div class="h-1"></div>
@@ -889,10 +894,95 @@ function posPage() {
 
     modalOpen: false, reviewing: false,
 
-    /* ── POS settings (UI only — nothing here talks to a printer yet) ── */
+    /* ── POS settings + Bluetooth ESC/POS printing ── */
     settingsOpen: false, settingsView: 'menu',
-    receiptCfg: { store: 'PharmaPOS Pharmacy', title: 'PharmaPOS Pharmacy', header: '123 Sample St., Manila\nTIN: 000-000-000-000', footer: 'Thank you! Get well soon.', size: '58', notes: false, autoPrint: true },
-    printerCfg: { mode: 'bluetooth', connected: false },
+    receiptCfg: (() => { const d = { store: 'PharmaPOS Pharmacy', title: 'PharmaPOS Pharmacy', header: '123 Sample St., Manila\nTIN: 000-000-000-000', footer: 'Thank you! Get well soon.', size: '58', notes: false, autoPrint: true };
+      try { return { ...d, ...JSON.parse(localStorage.getItem('pp_receiptCfg') || '{}') }; } catch (e) { return d; } })(),
+    printerCfg: (() => { let n = ''; try { n = localStorage.getItem('pp_printerName') || ''; } catch (e) {} let m = 'bluetooth'; try { m = localStorage.getItem('pp_printerMode') === 'usb' ? 'usb' : 'bluetooth'; } catch (e) {} return { mode: m, connected: false, idle: false, connecting: false, name: n, error: '' }; })(),
+    btSupported: typeof navigator !== 'undefined' && !!navigator.bluetooth,
+    /* When opened through app.html, the Bluetooth link is owned by the outer shell page, which never reloads,
+       so the printer stays connected while you browse Sales, Medicines, etc. */
+    get _framed() { try { return window.parent !== window && !!window.parent.ppBT; } catch (e) { return false; } },
+    get _nb() { return this._framed ? window.parent.navigator.bluetooth : navigator.bluetooth; },
+    printing: false, _btDev: null, _btChar: null, _idleT: null, _rcT: null, _intentional: false, _leaving: false,
+    get printerReady() { return this.printerCfg.mode === 'usb' ? this.usb.connected : (this.printerCfg.connected || this.printerCfg.idle); },
+    get pConnected() { return this.printerCfg.mode === 'usb' ? this.usb.connected : this.printerCfg.connected; },
+    get pName() { return this.printerCfg.mode === 'usb' ? this.usb.name : this.printerCfg.name; },
+    setMode(m) { this.printerCfg.mode = m; this.printerCfg.error = ''; try { localStorage.setItem('pp_printerMode', m); } catch (e) {} if (m === 'usb' && this.usbSupported && !this.usb.connected && this.usb.name) this.usbReconnect(false); },
+
+    /* ---- USB (WebUSB, raw ESC/POS to the printer's bulk-out endpoint) ---- */
+    usb: (() => { let n = ''; try { n = localStorage.getItem('pp_usbName') || ''; } catch (e) {} return { dev: null, iface: null, ep: null, connected: false, name: n }; })(),
+    get usbSupported() { return typeof navigator !== 'undefined' && !!navigator.usb; },
+    async usbScan() {
+      this.printerCfg.error = '';
+      try {
+        const dev = await navigator.usb.requestDevice({ filters: [] });
+        this.printerCfg.connecting = true;
+        await this.usbOpen(dev);
+        this.showToast('Connected to ' + this.usb.name);
+      } catch (e) {
+        if (e && e.name === 'NotFoundError') return;        // user cancelled
+        this.printerCfg.error = 'Could not connect: ' + (e.message || e) + (/claim|denied|Access/i.test(String(e.message || e)) ? ' — the OS printer driver is holding the printer (see the Windows note above).' : '');
+      } finally { this.printerCfg.connecting = false; }
+    },
+    async usbOpen(dev) {
+      if (!dev.opened) await dev.open();
+      if (dev.configuration === null) await dev.selectConfiguration(1);
+      let best = null;
+      for (const itf of dev.configuration.interfaces) for (const alt of itf.alternates) {
+        const ep = alt.endpoints.find(e => e.direction === 'out' && e.type === 'bulk');
+        if (!ep) continue;
+        const rank = alt.interfaceClass === 7 ? 0 : (alt.interfaceClass === 255 ? 1 : 2);      // printer class first, then vendor-specific
+        if (!best || rank < best.rank) best = { rank, num: itf.interfaceNumber, alt: alt.alternateSetting, ep: ep.endpointNumber };
+      }
+      if (!best) { try { await dev.close(); } catch (x) {} throw new Error('No printer (bulk-out) interface found on this device'); }
+      await dev.claimInterface(best.num);
+      if (best.alt) await dev.selectAlternateInterface(best.num, best.alt);
+      this.usb = { dev, iface: best.num, ep: best.ep, connected: true, name: dev.productName || ('USB printer ' + dev.vendorId.toString(16) + ':' + dev.productId.toString(16)) };
+      try { localStorage.setItem('pp_usbName', this.usb.name); localStorage.setItem('pp_usbId', dev.vendorId + ':' + dev.productId); } catch (e) {}
+      if (!this._usbEvt) {
+        this._usbEvt = true;
+        navigator.usb.addEventListener('disconnect', e => { if (this.usb.dev && e.device === this.usb.dev) { this.usb.connected = false; this.usb.dev = null; } });      // cable pulled
+        navigator.usb.addEventListener('connect', () => { if (!this.usb.connected && this.printerCfg.mode === 'usb' && this.usb.name) this.usbReconnect(false); });     // plugged back in
+      }
+    },
+    async usbReconnect(manual) {
+      if (!this.usbSupported || this.printerCfg.connecting) return false;
+      if (this.usb.connected && this.usb.dev && this.usb.dev.opened) return true;
+      this.printerCfg.connecting = true; this.printerCfg.error = '';
+      try {
+        let id = ''; try { id = localStorage.getItem('pp_usbId') || ''; } catch (e) {}
+        const dev = (await navigator.usb.getDevices()).find(d => (d.vendorId + ':' + d.productId) === id);   // remembered device (no prompt needed)
+        if (dev) { await this.usbOpen(dev); if (manual) this.showToast('Printer connected'); return true; }
+      } catch (e) { this.printerCfg.error = 'USB reconnect failed: ' + (e.message || e); }
+      finally { this.printerCfg.connecting = false; }
+      if (manual) { await this.usbScan(); return this.usb.connected; }      // not remembered / unplugged: show chooser (needs the tap)
+      return false;
+    },
+    async usbDisconnect() {
+      const u = this.usb;
+      try { if (u.dev) { await u.dev.releaseInterface(u.iface); await u.dev.close(); } } catch (e) {}
+      this.usb = { ...this.usb, dev: null, connected: false };
+    },
+    async usbWrite(bytes) {
+      const u = this.usb, CH = 4096;
+      const guard = p => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('Printer not responding (is it on, with paper loaded?)')), 8000))]);
+      for (let i = 0; i < bytes.length; i += CH) {
+        const r = await guard(u.dev.transferOut(u.ep, bytes.slice(i, i + CH)));
+        if (r.status === 'stall') { await u.dev.clearHalt('out', u.ep); throw new Error('Printer stalled'); }
+      }
+    },
+    async printViaUsb(sale) {
+      let err;
+      for (let i = 0; i < 2; i++) {
+        try {
+          if (!(this.usb.connected && this.usb.dev && this.usb.dev.opened)) { if (!(await this.usbReconnect(true))) throw new Error('USB printer not connected'); }
+          await this.usbWrite(this.escposBytes(sale));
+          return;
+        } catch (e) { err = e; this.usb.connected = false; try { await this.usbDisconnect(); } catch (x) {} await new Promise(r => setTimeout(r, 500)); }
+      }
+      throw err;
+    },
     openSettings() {
       this.lastFocus = document.activeElement;
       this.settingsView = 'menu'; this.settingsOpen = true;
@@ -912,8 +1002,184 @@ function posPage() {
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     },
-    saveReceiptSettings() { this.showToast('Receipt settings saved (preview only)'); },
-    scanPrinter() { this.showToast('Printer scanning isn’t available yet — UI only'); },
+    saveReceiptSettings() {
+      try { localStorage.setItem('pp_receiptCfg', JSON.stringify(this.receiptCfg)); } catch (e) {}
+      this.showToast('Receipt settings saved');
+    },
+
+    /* ---- Bluetooth (Web Bluetooth, BLE ESC/POS thermal printers) ---- */
+    BT_SERVICES: ['000018f0-0000-1000-8000-00805f9b34fb', '0000ff00-0000-1000-8000-00805f9b34fb', '0000ffe0-0000-1000-8000-00805f9b34fb',
+      '0000fee7-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2', '49535343-fe7d-4ae5-8fa9-9fafd205e455'],
+    async scanPrinter() {
+      this.printerCfg.error = '';
+      try {
+        const dev = await this._nb.requestDevice({ acceptAllDevices: true, optionalServices: this.BT_SERVICES });
+        await this.btConnect(dev);
+        this.showToast('Connected to ' + (dev.name || 'printer'));
+      } catch (e) {
+        if (e && e.name === 'NotFoundError') return;          // user cancelled
+        this.printerCfg.error = 'Could not connect: ' + (e.message || e);
+      }
+    },
+    async btConnect(dev) {
+      const server = await dev.gatt.connect();
+      let ch = null;
+      for (const svc of await server.getPrimaryServices()) {
+        for (const c of await svc.getCharacteristics()) {
+          if (c.properties.write || c.properties.writeWithoutResponse) { ch = c; break; }
+        }
+        if (ch) break;
+      }
+      if (!ch) { dev.gatt.disconnect(); throw new Error('No writable printer channel found. This printer may be Bluetooth Classic (not supported by browsers).'); }
+      this._btDev = dev; this._btChar = ch;
+      this.printerCfg.connected = true; this.printerCfg.idle = false; this.printerCfg.name = dev.name || 'Bluetooth printer';
+      try { localStorage.setItem('pp_printerName', this.printerCfg.name); localStorage.setItem('pp_printerId', dev.id || ''); } catch (e) {}
+      if (this._framed) { window.parent.ppBT.dev = dev; window.parent.ppBT.ch = ch; }
+      if (dev._ppL) { try { dev.removeEventListener('gattserverdisconnected', dev._ppL); } catch (e) {} }
+      { dev._ppL = () => { this.printerCfg.connected = false; this._btChar = null; if (this._btDev === dev && !this._intentional && !this._leaving) this.scheduleReconnect(); }; dev.addEventListener('gattserverdisconnected', dev._ppL); this._ppDev = dev; }
+    },
+    /* ---- reconnect after reload / sleep ---- */
+    async reconnectPrinter(manual) {
+      if (this.printerCfg.mode === 'usb') return this.usbReconnect(manual);
+      if (!this.btSupported || this.printerCfg.connecting) return false;
+      this.printerCfg.connecting = true; this.printerCfg.error = '';
+      try {
+        let dev = this._btDev;
+        if (!dev && this._nb.getDevices) {
+          let id = ''; try { id = localStorage.getItem('pp_printerId') || ''; } catch (e) {}
+          const list = await this._nb.getDevices();
+          dev = list.find(d => d.id === id) || list.find(d => d.name === this.printerCfg.name) || null;
+        }
+        if (!dev) { if (manual) await this.scanPrinter(); return this.printerCfg.connected; }   // no remembered device -> chooser
+        await Promise.race([this.btConnect(dev), new Promise((_, rej) => setTimeout(() => rej(new Error('Printer not found nearby. Is it on?')), 8000))]);
+        if (manual) this.showToast('Printer connected');
+        return true;
+      } catch (e) {
+        if (manual) this.showToast('Reconnect failed: ' + (e.message || e));
+        return false;
+      } finally { this.printerCfg.connecting = false; }
+    },
+    autoReconnect() {
+      if (this.usbSupported && this.usb.name) this.usbReconnect(false);      // USB: reopen the remembered printer on page load
+      if (this.printerCfg.mode === 'usb') return;
+      /* Web Bluetooth links die when the page unloads. Disconnect cleanly so the printer is free to re-advertise. */
+      window.addEventListener('pagehide', () => { this._leaving = true; clearTimeout(this._rcT); if (this._ppDev && this._ppDev._ppL) { try { this._ppDev.removeEventListener('gattserverdisconnected', this._ppDev._ppL); } catch (e) {} } if (this._framed) return; try { if (this._btDev && this._btDev.gatt.connected) this._btDev.gatt.disconnect(); } catch (e) {} });
+      window.addEventListener('pageshow', e => { if (e.persisted) { this._leaving = false; if (this.printerCfg.name) this.reconnectPrinter(false); } });
+      if (this._framed && window.parent.ppBT.dev && window.parent.ppBT.dev.gatt.connected && window.parent.ppBT.ch) {   // still connected from the previous page
+        const d = window.parent.ppBT.dev;
+        this._btDev = d; this._btChar = window.parent.ppBT.ch; this.printerCfg.connected = true; this.printerCfg.name = d.name || this.printerCfg.name || 'Bluetooth printer';
+        if (d._ppL) { try { d.removeEventListener('gattserverdisconnected', d._ppL); } catch (e) {} }
+        d._ppL = () => { this.printerCfg.connected = false; this._btChar = null; if (this._btDev === d && !this._intentional && !this._leaving) this.scheduleReconnect(); };
+        d.addEventListener('gattserverdisconnected', d._ppL); this._ppDev = d;
+      }
+      if (!this.btSupported || !this.printerCfg.name) return;
+      if (!this._nb.getDevices) this.printerCfg.error = 'This browser cannot remember the printer between pages. Enable chrome://flags/#enable-web-bluetooth-new-permissions-backend and relaunch Chrome so it reconnects automatically. Without it, pick the printer again when you press Print.';
+      (async () => { for (let i = 0; i < 4; i++) { if (this._leaving) return; if (await this.reconnectPrinter(false)) { this.scheduleRelease(); return; } await new Promise(r => setTimeout(r, 1500 * (i + 1))); } })();   // retry: printer needs a moment to re-advertise after the previous page
+      document.addEventListener('visibilitychange', () => { if (!document.hidden && !this.printerReady) this.reconnectPrinter(false); });
+      setInterval(() => { if (this._btDev && !this._btDev.gatt.connected && this.printerCfg.connected) this.printerCfg.connected = false; }, 5000);   // connection check
+    },
+    async btEnsure() {
+      if (this._btChar && this._btDev && this._btDev.gatt.connected) return;
+      if (await this.reconnectPrinter(true)) return;   // called from a click: may show the browser chooser once if the printer isn't remembered
+      throw new Error('Printer not connected');
+    },
+    disconnectPrinter() { if (this.printerCfg.mode === 'usb') { this.usbDisconnect(); return; } if (this._btDev && this._btDev.gatt.connected) this._btDev.gatt.disconnect(); this.printerCfg.connected = false; },
+    async btWrite(bytes) {
+      /* Small chunks + a pause between them so the printer's tiny buffer never overflows (long receipts used to stall it),
+         and a timeout on every write so the button can never get stuck on "Printing…". */
+      const ch = this._btChar, noResp = !ch.properties.write && ch.properties.writeWithoutResponse, CH = 20, GAP = noResp ? 40 : 20;
+      const guard = p => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('Printer not responding')), 8000))]);
+      for (let i = 0; i < bytes.length; i += CH) {
+        const part = bytes.slice(i, i + CH);
+        if (noResp) await guard(ch.writeValueWithoutResponse(part));
+        else await guard(ch.writeValue(part));
+        await new Promise(r => setTimeout(r, GAP));
+      }
+    },
+
+    /* ---- ESC/POS receipt builder ---- */
+    escposBytes(sale) {
+      const W = this.receiptCfg.size === '80' ? 48 : 32, enc = new TextEncoder(), out = [];
+      const clean = t => String(t).replace(/₱/g, 'P').replace(/[^\x20-\x7E]/g, c => (c === '·' ? '-' : '?'));
+      const raw = (...b) => out.push(Uint8Array.from(b));
+      const txt = t => out.push(enc.encode(clean(t) + '\n'));
+      const pesoP = n => clean(this.peso(n));
+      const center = t => String(t).split('\n').forEach(l => txt(l)), 
+            line = () => txt('-'.repeat(W)),
+            row = (a, b) => { a = clean(a); b = clean(b); const sp = Math.max(1, W - a.length - b.length); txt(a.length + b.length + 1 > W ? a.slice(0, W - b.length - 1) + ' ' + b : a + ' '.repeat(sp) + b); };
+      raw(0x1B, 0x40);                                    // init
+      raw(0x1B, 0x61, 1); raw(0x1B, 0x45, 1); raw(0x1D, 0x21, 0x01);
+      txt(this.receiptCfg.title || this.receiptCfg.store);
+      raw(0x1D, 0x21, 0x00); raw(0x1B, 0x45, 0);
+      if (this.receiptCfg.header) center(this.receiptCfg.header);
+      raw(0x1B, 0x61, 0); line();
+      if (sale.test) { raw(0x1B, 0x61, 1); txt('*** TEST PRINT ***'); txt('Printer is working!'); raw(0x1B, 0x61, 0); }
+      else {
+        row('Receipt', sale.no); row('Date', sale.date); row('Cashier', sale.cashier || 'Maria Santos');
+        if (sale.customer) row(sale.customer.type, sale.customer.name + ' ' + sale.customer.id);
+        line();
+        sale.lines.forEach(l => { txt(l.m.brand + ' ' + l.m.strength + (l.m.rx ? ' (Rx)' : '')); row('  ' + l.qty + ' x ' + pesoP(l.m.price), pesoP(l.total)); });
+        line();
+        row('Subtotal', pesoP(sale.t.gross));
+        if (sale.discount === 'none') row('VAT (12%) incl.', pesoP(sale.t.vat));
+        else { row('VAT exemption', '-' + pesoP(sale.t.vat)); row('20% discount', '-' + pesoP(sale.t.disc)); }
+        raw(0x1B, 0x45, 1); row('TOTAL', pesoP(sale.t.total)); raw(0x1B, 0x45, 0);
+        line();
+        row(this.methods.find(p => p.key === sale.method).label, pesoP(sale.method === 'cash' ? sale.tendered : sale.t.total));
+        if (sale.method === 'cash') row('Change', pesoP(sale.change)); else row('Ref', sale.ref);
+        if (sale.rx) { line(); txt('Prescription'); txt('Patient: ' + sale.rx.patient); txt('Dr. ' + sale.rx.doctor.replace(/^Dr\.?\s*/i, '') + ' PRC ' + sale.rx.prc); }
+        line();
+        raw(0x1B, 0x61, 1);
+        if (this.receiptCfg.footer) center(this.receiptCfg.footer);
+        txt('Keep this receipt for returns.'); raw(0x1B, 0x61, 0);
+      }
+      txt(''); txt(''); txt(''); raw(0x1D, 0x56, 0x42, 0x00);   // feed + partial cut (ignored if no cutter)
+      const len = out.reduce((n, a) => n + a.length, 0), buf = new Uint8Array(len); let o = 0;
+      out.forEach(a => { buf.set(a, o); o += a.length; });
+      return buf;
+    },
+    async printViaBluetooth(sale) {
+      clearTimeout(this._idleT);
+      let err;
+      for (let i = 0; i < 3; i++) {                       // connect (retry) then write
+        try {
+          await this.btEnsure();
+          await this.btWrite(this.escposBytes(sale));
+          this.scheduleRelease();
+          return;
+        } catch (e) {
+          err = e; this.printerCfg.connected = false; this._btChar = null;
+          try { if (this._btDev && this._btDev.gatt.connected) this._btDev.gatt.disconnect(); } catch (x) {}
+          await new Promise(r => setTimeout(r, 1500));
+        }
+      }
+      throw err;
+    },
+    /* Keep the link open while you are on the POS page (the old 4-second auto-disconnect is removed).
+       If the link drops by itself, reconnect quietly; printing also reconnects on demand. */
+    scheduleRelease() { clearTimeout(this._idleT); },
+    scheduleReconnect() {
+      clearTimeout(this._rcT);
+      this.printerCfg.idle = true;                       // still 'ready': reconnects on next print
+      this._rcT = setTimeout(() => {
+        if (!this._leaving && !this.printing && !(this._btDev && this._btDev.gatt.connected)) this.reconnectPrinter(false);
+      }, 1500);
+    },
+    async printReceipt() {
+      if (!this.sale) return;
+      const usbMode = this.printerCfg.mode === 'usb';
+      if (usbMode ? (!this.usbSupported || (!this.usb.connected && !this.usb.name)) : (!this.printerCfg.connected && !this._btDev && !this.printerCfg.name)) { window.print(); return; }   // no printer set up -> system print dialog
+      this.printing = true;
+      try { await (usbMode ? this.printViaUsb(this.sale) : this.printViaBluetooth(this.sale)); this.showToast('Receipt sent to printer'); }
+      catch (e) { this.showToast((usbMode ? 'USB' : 'Bluetooth') + ' print failed (' + (e.message || e) + '). Opening print dialog…'); setTimeout(() => window.print(), 600); }
+      finally { this.printing = false; }
+    },
+    async testPrint() {
+      this.printing = true; this.printerCfg.error = '';
+      try { await (this.printerCfg.mode === 'usb' ? this.printViaUsb({ test: true }) : this.printViaBluetooth({ test: true })); }
+      catch (e) { this.printerCfg.error = 'Test print failed: ' + (e.message || e); }
+      finally { this.printing = false; }
+    },
 
     items: ppMedicines(),
     categories: ['Pain & Fever', 'Antibiotics', 'Cough & Cold', 'Vitamins & Supplements', 'Maintenance', 'Gastrointestinal', 'First Aid', 'Personal Care'],
@@ -1080,6 +1346,7 @@ function posPage() {
       this.showToast(saved ? 'Sale ' + this.sale.no + ' completed' : 'Sale completed, but it couldn’t be saved to Sales History (storage unavailable).');
       document.body.style.overflow = 'hidden';
       this.$nextTick(() => this.$refs.newSale && this.$refs.newSale.focus());
+      if (this.receiptCfg.autoPrint && this.printerReady) this.printReceipt();   // auto-print only to a connected Bluetooth printer
     },
 
     /* ── receipt ── */
