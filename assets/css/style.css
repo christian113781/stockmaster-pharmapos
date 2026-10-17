@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   PharmaPOS — stylesheet
+   TalipapaPOS — stylesheet
    ══════════════════════════════════════════════ */
 
 /* ── reset ──────────────────────────────────── */
@@ -195,6 +195,14 @@ body { font-family: 'Poppins', sans-serif; background: #f5faf7; overflow-x: hidd
 .field:focus { border-color: #1b9a62; box-shadow: 0 0 0 3px rgba(27,154,98,.15); }
 .field.error  { border-color: #ef4444; }
 
+/* native <select> styled to match the other POS inputs */
+select.cust-select {
+  -webkit-appearance: none; appearance: none; padding-inline-end: 2.5rem; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right .85rem center; background-size: 1rem;
+}
+[dir="rtl"] select.cust-select { background-position: left .85rem center; }
+
 /* ── step indicator ──────────────────────────── */
 .step-dot {
   width: 2rem; height: 2rem; border-radius: 9999px;
@@ -263,13 +271,13 @@ body { font-family: 'Poppins', sans-serif; background: #f5faf7; overflow-x: hidd
 @media (hover: hover) and (pointer: fine) { .img-tile:hover { transform: scale(1.06); box-shadow: 0 2px 8px rgba(27,154,98,.3); } }
 
 /* ── POS ─────────────────────────────────────── */
-.chip { flex-shrink: 0; padding: .45rem .9rem; border-radius: 9999px; font-size: .78rem; font-weight: 600;
+.chip { flex-shrink: 0; padding: .45rem .9rem; border-radius: 9999px; font-size: .8125rem; font-weight: 600;
         background: #fff; color: #4b5563; border: 1.5px solid #e5e7eb; min-height: 2.5rem; white-space: nowrap;
         transition: background .15s, color .15s, border-color .15s; }
 .chip:hover { border-color: #b0e6c9; color: #0e6a42; }
 .chip.active { background: #12804f; border-color: #12804f; color: #fff; }
-.pay-opt { padding: .75rem .5rem; border-radius: .75rem; font-size: .875rem; font-weight: 600; text-align: center;
-           border: 1.5px solid #e5e7eb; color: #4b5563; background: #fff; min-height: 3rem; transition: all .15s; }
+.pay-opt { padding: .55rem .5rem; border-radius: .75rem; font-size: .8125rem; font-weight: 600; text-align: center;
+           border: 1.5px solid #e5e7eb; color: #4b5563; background: #fff; min-height: 2.75rem; transition: all .15s; }
 .pay-opt:hover { border-color: #b0e6c9; }
 .pay-opt.active { border-color: #12804f; background: #effaf4; color: #0e6a42; box-shadow: 0 0 0 3px rgba(27,154,98,.15); }
 .pcard { transition: transform .15s, box-shadow .15s; border: 1.5px solid transparent; }
@@ -346,3 +354,12 @@ body { font-family: 'Poppins', sans-serif; background: #f5faf7; overflow-x: hidd
   #settings-dialog { max-block-size: 94dvh; border-radius: 1.25rem 1.25rem .75rem .75rem; }
 }
 @media (prefers-reduced-motion: reduce) { #settings-dialog, .switch > span { transition: none; } }
+
+/* brand logo: full wordmark when expanded, icon only when collapsed */
+#sidebar .logo-mark { display: none; }
+#sidebar.collapsed .logo-full { display: none; }
+#sidebar.collapsed .logo-mark { display: block; }
+@media (max-width: 1023.98px) {
+  #sidebar.collapsed .logo-full { display: block; }
+  #sidebar.collapsed .logo-mark { display: none; }
+}

@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Point of Sale — PharmaPOS</title>
+  <title>Point of Sale — TalipapaPOS</title>
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -66,16 +67,11 @@
          class="bg-white flex flex-col shadow-card flex-shrink-0 relative z-30"
          :class="{ collapsed: sidebarCollapsed, 'mobile-open': mobileOpen }">
 
-    <div class="logo-wrap flex items-center gap-3 px-6 py-5 border-b border-gray-100 flex-shrink-0">
-      <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center flex-shrink-0" aria-hidden="true">
-        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-      </div>
-      <div class="logo-text min-w-0">
-        <p class="text-sm font-bold text-gray-900 leading-tight whitespace-nowrap">PharmaPOS</p>
-        <p class="text-[10px] text-gray-400 font-medium tracking-wide uppercase">Pharmacy POS</p>
-      </div>
+    <div class="logo-wrap flex items-center gap-3 px-6 py-4 min-h-[77px] border-b border-gray-100 flex-shrink-0">
+      <a href="index.html" class="flex items-center min-w-0" aria-label="TalipapaPOS — go to dashboard">
+        <img src="assets/img/logo.png" alt="TalipapaPOS" class="logo-full h-7 w-auto max-w-full" width="150" height="28">
+        <img src="assets/img/favicon.png" alt="TalipapaPOS" class="logo-mark w-9 h-9" width="36" height="36">
+      </a>
     </div>
 
     <nav class="flex-1 sidebar-scroll py-3 px-2" aria-label="Primary">
@@ -437,7 +433,7 @@
             </ul>
           </div>
 
-          <div class="cart-foot sticky bottom-0 z-10 border-t border-gray-100 px-5 py-4 space-y-3 bg-white xl:rounded-b-2xl">
+          <div class="cart-foot sticky bottom-0 z-10 border-t border-gray-100 px-5 py-3.5 space-y-2.5 bg-white xl:rounded-b-2xl">
             <div class="cart-detail">
               <label for="cust-btn" class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Customer</label>
               <div x-show="customer" style="display:none" class="flex items-center gap-2.5 rounded-xl border border-brand-200 bg-brand-50/50 ps-2.5 pe-1 py-1.5">
@@ -483,7 +479,7 @@
             </div>
             <div>
               <label for="disc" class="cart-detail block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Customer type</label>
-              <select id="disc" x-model="discount" :disabled="!!customer" :title="customer ? 'Remove the selected customer to change the type' : null" class="field min-h-[2.75rem] py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed">
+              <select id="disc" x-model="discount" :disabled="!!customer" :title="customer ? 'Remove the selected customer to change the type' : null" class="field cust-select min-h-[2.75rem] py-2 text-sm text-gray-700 disabled:opacity-60 disabled:cursor-not-allowed">
                 <option value="none">Regular customer</option>
                 <option value="senior">Senior Citizen — 20% off + VAT exempt</option>
                 <option value="pwd">PWD — 20% off + VAT exempt</option>
@@ -495,12 +491,12 @@
               <template x-if="discount !== 'none'"><div class="cart-detail flex justify-between text-gray-500"><dt>Less: VAT exemption</dt><dd x-text="'−' + peso(t.vat)"></dd></div></template>
               <template x-if="discount !== 'none'"><div class="flex justify-between text-brand-700 font-medium"><dt>Less: 20% discount</dt><dd x-text="'−' + peso(t.disc)"></dd></div></template>
               <div class="flex justify-between items-baseline pt-2 border-t border-dashed border-gray-200">
-                <dt class="text-base font-bold text-gray-900">Total</dt>
-                <dd class="text-2xl font-bold text-brand-700" x-text="peso(t.total)"></dd>
+                <dt class="text-sm font-bold text-gray-900">Total</dt>
+                <dd class="text-xl font-bold text-brand-700" x-text="peso(t.total)"></dd>
               </div>
             </dl>
             <button @click="openCheckout()" :disabled="!cart.length"
-                    class="w-full py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-base font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed min-h-[52px]">
+                    class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed min-h-[44px]">
               Charge <span x-text="peso(t.total)"></span>
             </button>
           </div>
@@ -510,7 +506,7 @@
 
     <!-- mobile cart bar -->
     <div class="xl:hidden fixed inset-x-0 bottom-0 z-30 p-3 pb-[max(.75rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-white via-white/95 to-transparent" x-show="!cartOpen" style="display:none">
-      <button @click="cartOpen = true" class="w-full flex items-center justify-between gap-3 bg-brand-600 text-white rounded-2xl px-5 py-3.5 shadow-lg min-h-[56px]" :aria-label="'View cart, ' + itemCount + ' items, total ' + peso(t.total)">
+      <button @click="cartOpen = true" class="w-full flex items-center justify-between gap-3 bg-brand-600 text-white rounded-2xl px-4 py-3 shadow-lg min-h-[48px]" :aria-label="'View cart, ' + itemCount + ' items, total ' + peso(t.total)">
         <span class="flex items-center gap-2 font-semibold">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
           View cart <span class="bg-white/20 rounded-full px-2 py-0.5 text-xs" x-text="itemCount"></span>
@@ -525,10 +521,10 @@
 <div id="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title"
      :class="{ open: modalOpen }" @keydown.escape="closeModal()"
      @click="if ($event.target.id === 'modal-backdrop') closeModal()">
-  <div id="modal-dialog" x-ref="dialog" @keydown.tab="trapFocus($event)" style="width:min(100%,30rem)">
-    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 sticky top-0 bg-white z-10 rounded-t-[1.25rem]">
+  <div id="modal-dialog" x-ref="dialog" @keydown.tab="trapFocus($event)" style="width:min(100%,28rem)">
+    <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 sticky top-0 bg-white z-10 rounded-t-[1.25rem]">
       <div>
-        <h2 id="modal-title" class="text-lg font-bold text-gray-900" x-text="reviewing ? 'Order summary' : 'Checkout'"></h2>
+        <h2 id="modal-title" class="text-base font-bold text-gray-900" x-text="reviewing ? 'Order summary' : 'Checkout'"></h2>
         <p class="text-xs text-gray-400 mt-0.5" x-text="reviewing ? 'Check everything before completing the sale.' : itemCount + ' item(s) · ' + receiptNo"></p>
       </div>
       <button type="button" @click="closeModal()" class="p-2 rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-600" aria-label="Close checkout">
@@ -536,10 +532,10 @@
       </button>
     </div>
 
-    <form x-show="!reviewing" @submit.prevent="review()" novalidate class="px-6 py-5 space-y-5">
-      <div class="bg-brand-50 rounded-xl p-4 flex items-baseline justify-between">
+    <form x-show="!reviewing" @submit.prevent="review()" novalidate class="px-5 py-4 space-y-4">
+      <div class="bg-brand-50 rounded-xl px-4 py-3 flex items-baseline justify-between">
         <span class="text-sm font-medium text-brand-700">Amount due</span>
-        <span class="text-3xl font-bold text-brand-700" x-text="peso(t.total)"></span>
+        <span class="text-2xl font-bold text-brand-700" x-text="peso(t.total)"></span>
       </div>
 
       <!-- Selected customer -->
@@ -603,16 +599,16 @@
       <div x-show="method === 'cash'" class="space-y-3">
         <div>
           <label for="tender" class="block text-xs font-semibold text-gray-600 mb-1.5">Cash received (₱)</label>
-          <input id="tender" type="number" min="0" step="0.01" inputmode="decimal" class="field text-lg font-semibold" :class="{ error: errors.tender }" x-model.number="tendered" placeholder="0.00">
+          <input id="tender" type="number" min="0" step="0.01" inputmode="decimal" class="field text-base font-semibold" :class="{ error: errors.tender }" x-model.number="tendered" placeholder="0.00">
           <p class="mt-1 text-xs text-red-500" role="alert" x-show="errors.tender">Cash received is less than the amount due.</p>
         </div>
         <div class="flex flex-wrap gap-2">
           <button type="button" class="chip" @click="tendered = t.total">Exact</button>
           <template x-for="q in quickCash" :key="q"><button type="button" class="chip" @click="tendered = q" x-text="peso(q)"></button></template>
         </div>
-        <div class="flex items-baseline justify-between bg-gray-50 rounded-xl px-4 py-3">
+        <div class="flex items-baseline justify-between bg-gray-50 rounded-xl px-4 py-2.5">
           <span class="text-sm text-gray-500">Change</span>
-          <span class="text-xl font-bold" :class="change >= 0 ? 'text-brand-700' : 'text-gray-300'" x-text="change >= 0 ? peso(change) : '—'"></span>
+          <span class="text-lg font-bold" :class="change >= 0 ? 'text-brand-700' : 'text-gray-300'" x-text="change >= 0 ? peso(change) : '—'"></span>
         </div>
       </div>
 
@@ -623,13 +619,13 @@
       </div>
 
       <div class="flex items-center gap-3 pt-1">
-        <button type="button" @click="closeModal()" class="px-5 py-3 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-100 min-h-[48px]">Cancel</button>
-        <button type="submit" class="flex-1 py-3 rounded-xl text-sm font-bold bg-brand-600 text-white hover:bg-brand-700 shadow-sm min-h-[48px]">Review order</button>
+        <button type="button" @click="closeModal()" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-100 min-h-[44px]">Cancel</button>
+        <button type="submit" class="flex-1 py-2.5 rounded-xl text-sm font-bold bg-brand-600 text-white hover:bg-brand-700 shadow-sm min-h-[44px]">Review order</button>
       </div>
     </form>
 
     <!-- ── ORDER SUMMARY (shown before the sale is completed) ── -->
-    <div x-show="reviewing" class="px-6 py-5 space-y-4">
+    <div x-show="reviewing" class="px-5 py-4 space-y-3.5">
       <div class="border border-gray-100 rounded-xl divide-y divide-gray-100">
         <template x-for="l in lines" :key="l.m.id">
           <div class="flex items-start justify-between gap-3 px-4 py-3">
@@ -649,9 +645,9 @@
         <div class="flex justify-between" x-show="discount !== 'none'"><dt class="text-gray-500">20% discount</dt><dd class="text-gray-700" x-text="'−' + peso(t.disc)"></dd></div>
       </dl>
 
-      <div class="bg-brand-50 rounded-xl p-4 flex items-baseline justify-between">
+      <div class="bg-brand-50 rounded-xl px-4 py-3 flex items-baseline justify-between">
         <span class="text-sm font-medium text-brand-700">Total</span>
-        <span class="text-3xl font-bold text-brand-700" x-text="peso(t.total)"></span>
+        <span class="text-2xl font-bold text-brand-700" x-text="peso(t.total)"></span>
       </div>
 
       <dl class="space-y-1.5 text-sm border-t border-gray-100 pt-3">
@@ -668,8 +664,8 @@
       </dl>
 
       <div class="flex items-center gap-3 pt-1">
-        <button type="button" @click="reviewing = false" class="px-5 py-3 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-100 min-h-[48px]">Back</button>
-        <button type="button" x-ref="confirmSale" @click="confirmSale()" class="flex-1 py-3 rounded-xl text-sm font-bold bg-brand-600 text-white hover:bg-brand-700 shadow-sm min-h-[48px]">Confirm sale</button>
+        <button type="button" @click="reviewing = false" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-100 min-h-[44px]">Back</button>
+        <button type="button" x-ref="confirmSale" @click="confirmSale()" class="flex-1 py-2.5 rounded-xl text-sm font-bold bg-brand-600 text-white hover:bg-brand-700 shadow-sm min-h-[44px]">Confirm sale</button>
       </div>
     </div>
   </div>
@@ -785,8 +781,8 @@
           <div>
             <label for="rs-store" class="block text-xs font-semibold text-gray-500 mb-1">Store</label>
             <select id="rs-store" class="field w-full" x-model="receiptCfg.store">
-              <option>PharmaPOS Pharmacy</option>
-              <option>PharmaPOS – Branch 2</option>
+              <option>TalipapaPOS Pharmacy</option>
+              <option>TalipapaPOS – Branch 2</option>
             </select>
           </div>
           <div>
@@ -896,7 +892,7 @@ function posPage() {
 
     /* ── POS settings + Bluetooth ESC/POS printing ── */
     settingsOpen: false, settingsView: 'menu',
-    receiptCfg: (() => { const d = { store: 'PharmaPOS Pharmacy', title: 'PharmaPOS Pharmacy', header: '123 Sample St., Manila\nTIN: 000-000-000-000', footer: 'Thank you! Get well soon.', size: '58', notes: false, autoPrint: true };
+    receiptCfg: (() => { const d = { store: 'TalipapaPOS Pharmacy', title: 'TalipapaPOS Pharmacy', header: '123 Sample St., Manila\nTIN: 000-000-000-000', footer: 'Thank you! Get well soon.', size: '58', notes: false, autoPrint: true };
       try { return { ...d, ...JSON.parse(localStorage.getItem('pp_receiptCfg') || '{}') }; } catch (e) { return d; } })(),
     printerCfg: (() => { let n = ''; try { n = localStorage.getItem('pp_printerName') || ''; } catch (e) {} let m = 'bluetooth'; try { m = localStorage.getItem('pp_printerMode') === 'usb' ? 'usb' : 'bluetooth'; } catch (e) {} return { mode: m, connected: false, idle: false, connecting: false, name: n, error: '' }; })(),
     btSupported: typeof navigator !== 'undefined' && !!navigator.bluetooth,

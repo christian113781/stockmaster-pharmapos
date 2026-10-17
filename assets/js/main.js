@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════════
-   PharmaPOS — SHARED DASHBOARD LOGIC
+   TalipapaPOS — SHARED DASHBOARD LOGIC
    ════════════════════════════════════════════════════════════════ */
 
 
@@ -178,9 +178,9 @@ var ppProfile = {
   defaults() {
     const d = n => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
     return {
-      personal: { first: 'Maria', last: 'Santos', role: 'Pharmacist', email: 'maria.santos@pharmapos.example', phone: '0917 555 0100', birth: '1990-06-15', address: 'Digos City, Davao del Sur', photo: '' },
+      personal: { first: 'Maria', last: 'Santos', role: 'Pharmacist', email: 'maria.santos@talipapapos.example', phone: '0917 555 0100', birth: '1990-06-15', address: 'Digos City, Davao del Sur', photo: '' },
       pro: { prcNo: '0123456', prcExpiry: d(220), ptrNo: '', inCharge: true },
-      store: { name: 'PharmaPOS Drugstore', address: 'Rizal Ave., Digos City, Davao del Sur', phone: '(082) 555 0123', ltoNo: 'LTO-2026-00117', ltoExpiry: d(300), tin: '123-456-789-000' },
+      store: { name: 'TalipapaPOS Drugstore', address: 'Rizal Ave., Digos City, Davao del Sur', phone: '(082) 555 0123', ltoNo: 'LTO-2026-00117', ltoExpiry: d(300), tin: '123-456-789-000' },
       prefs: { lowStock: true, expiring: true, deliveries: true, returns: true, daily: false },
       joined: new Date(Date.now() - 500 * 86400000).toISOString().slice(0, 10),
     };
@@ -246,6 +246,7 @@ function getNavSections(activeHref) {
     { label: 'Account', items: [
       { name: 'My Profile', href: 'profile.html', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
       { name: 'Settings', href: 'settings.html', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
+      { name: 'Welcome', href: 'welcome.html', icon: 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9' },
       { name: 'Login', href: 'login.html', icon: 'M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1' },
       { name: 'Register', href: 'register.html', icon: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z' },
       { name: '404 Page', href: '404.html', icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' },

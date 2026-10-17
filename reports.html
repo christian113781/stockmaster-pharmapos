@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Reports — PharmaPOS</title>
+  <title>Reports — TalipapaPOS</title>
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -66,16 +67,11 @@
          class="bg-white flex flex-col shadow-card flex-shrink-0 relative z-30"
          :class="{ collapsed: sidebarCollapsed, 'mobile-open': mobileOpen }">
 
-    <div class="logo-wrap flex items-center gap-3 px-6 py-5 border-b border-gray-100 flex-shrink-0">
-      <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center flex-shrink-0" aria-hidden="true">
-        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-      </div>
-      <div class="logo-text min-w-0">
-        <p class="text-sm font-bold text-gray-900 leading-tight whitespace-nowrap">PharmaPOS</p>
-        <p class="text-[10px] text-gray-400 font-medium tracking-wide uppercase">Pharmacy POS</p>
-      </div>
+    <div class="logo-wrap flex items-center gap-3 px-6 py-4 min-h-[77px] border-b border-gray-100 flex-shrink-0">
+      <a href="index.html" class="flex items-center min-w-0" aria-label="TalipapaPOS — go to dashboard">
+        <img src="assets/img/logo.png" alt="TalipapaPOS" class="logo-full h-7 w-auto max-w-full" width="150" height="28">
+        <img src="assets/img/favicon.png" alt="TalipapaPOS" class="logo-mark w-9 h-9" width="36" height="36">
+      </a>
     </div>
 
     <nav class="flex-1 sidebar-scroll py-3 px-2" aria-label="Primary">

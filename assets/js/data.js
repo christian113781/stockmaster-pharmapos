@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════════
-   PharmaPOS — shared sample data (replace with your API/database later)
+   TalipapaPOS — shared sample data (replace with your API/database later)
    Expiry dates are relative to today so every status shows in the demo.
    ════════════════════════════════════════════════════════════════ */
 function ppMedicines() {
